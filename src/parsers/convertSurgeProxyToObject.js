@@ -185,6 +185,28 @@ export function convertSurgeProxyToObject(line) {
                 } : undefined
             };
 
+        case 'anytls':
+            return {
+                tag,
+                type: 'anytls',
+                server,
+                server_port: port,
+                password: params.password,
+                tls: {
+                    enabled: true,
+                    server_name: params.sni || params['server-name'] || server,
+                    insecure: parseBool(params['skip-cert-verify']),
+                    alpn: params.alpn ? params.alpn.split(',').map(a => a.trim()) : undefined,
+                    utls: params['client-fingerprint'] ? {
+                        enabled: true,
+                        fingerprint: params['client-fingerprint']
+                    } : undefined
+                },
+                'idle-session-check-interval': params['idle-session-check-interval'] ? parseInt(params['idle-session-check-interval']) : undefined,
+                'idle-session-timeout': params['idle-session-timeout'] ? parseInt(params['idle-session-timeout']) : undefined,
+                'min-idle-session': params['min-idle-session'] ? parseInt(params['min-idle-session']) : undefined
+            };
+
         case 'http':
         case 'https':
             // Skip HTTP/HTTPS proxy types

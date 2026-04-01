@@ -128,6 +128,30 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
                     surgeProxy += `, udp-relay-mode=${proxy.udp_relay_mode}`;
                 }
                 break;
+            case 'anytls':
+                surgeProxy = `${proxy.tag} = anytls, ${proxy.server}, ${proxy.server_port}, password=${proxy.password}`;
+                if (proxy.tls?.server_name) {
+                    surgeProxy += `, sni=${proxy.tls.server_name}`;
+                }
+                if (proxy.tls?.insecure) {
+                    surgeProxy += ', skip-cert-verify=true';
+                }
+                if (proxy.tls?.alpn) {
+                    surgeProxy += `, alpn=${proxy.tls.alpn.join(',')}`;
+                }
+                if (proxy.tls?.utls?.fingerprint) {
+                    surgeProxy += `, client-fingerprint=${proxy.tls.utls.fingerprint}`;
+                }
+                if (proxy['idle-session-check-interval']) {
+                    surgeProxy += `, idle-session-check-interval=${proxy['idle-session-check-interval']}`;
+                }
+                if (proxy['idle-session-timeout']) {
+                    surgeProxy += `, idle-session-timeout=${proxy['idle-session-timeout']}`;
+                }
+                if (proxy['min-idle-session']) {
+                    surgeProxy += `, min-idle-session=${proxy['min-idle-session']}`;
+                }
+                break;
             default:
                 surgeProxy = `# ${proxy.tag} - Unsupported proxy type: ${proxy.type}`;
         }

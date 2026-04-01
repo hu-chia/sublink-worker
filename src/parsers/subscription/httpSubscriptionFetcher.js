@@ -57,10 +57,37 @@ function normalizeBase64Candidate(text) {
 }
 
 /**
+ * Check if content looks like Base64 encoded data
+ * @param {string} text - Text to check
+ * @returns {boolean} - True if content appears to be Base64 encoded
+ */
+function isLikelyBase64(text) {
+    // Remove whitespace for checking
+    const cleaned = text.replace(/\s/g, '');
+    if (cleaned.length === 0) return false;
+
+    // Base64 should only contain these characters
+    const base64Regex = /^[A-Za-z0-9+/]+=*$/;
+    if (!base64Regex.test(cleaned)) return false;
+
+    // Base64 length should be multiple of 4 (with padding)
+    if (cleaned.length % 4 !== 0) return false;
+
+    // Check if it looks like already decoded content (common patterns)
+    // If it starts with common YAML/JSON indicators, it's likely not base64
+    const textStart = text.trimStart().substring(0, 20).toLowerCase();
+    const decodedPatterns = ['proxies:', '{', '[', '#', 'server:', 'type:', 'name:'];
+    if (decodedPatterns.some(p => textStart.includes(p))) return false;
+
+    return true;
+}
+
+/**
  * Decode content only when the payload proves it is an encoded subscription.
  * @param {string} text - Raw text content
  * @returns {string} - Decoded content
  */
+<<<<<<< HEAD
 function decodeContent(text) {
     const urlDecodedText = decodeUriComponentIfNeeded(text);
     if (isPlainSubscriptionContent(urlDecodedText)) {
@@ -82,6 +109,38 @@ function decodeContent(text) {
     }
 
     return urlDecodedText;
+}
+
+function decodeContent(text) {
+    const trimmed = text.trim();
+
+    // Only try base64 decode if content looks like base64
+    if (isLikelyBase64(trimmed)) {
+        try {
+            const decodedText = decodeBase64(trimmed);
+            if (decodedText.includes('%')) {
+                try {
+                    return decodeURIComponent(decodedText);
+                } catch {
+                    return decodedText;
+                }
+            }
+            return decodedText;
+        } catch {
+            // Base64 decode failed, return original
+        }
+    }
+
+    // Not base64 or decode failed, try URL decode if needed
+    if (trimmed.includes('%')) {
+        try {
+            return decodeURIComponent(trimmed);
+        } catch {
+            console.warn('Failed to URL decode the text');
+        }
+    }
+
+    return text;
 }
 
 /**
