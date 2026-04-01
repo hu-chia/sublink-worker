@@ -413,9 +413,18 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
         }
 
         // Output [Host] section if present (from custom base config)
-        if (this.config.host && Array.isArray(this.config.host) && this.config.host.length > 0) {
+        // Support both array format (from Surge INI) and object format (from JSON config)
+        if (this.config.host) {
             finalConfig.push('\n[Host]');
-            finalConfig.push(...this.config.host);
+            if (Array.isArray(this.config.host)) {
+                // Array format: ['localhost = 127.0.0.1', ...]
+                finalConfig.push(...this.config.host);
+            } else if (typeof this.config.host === 'object') {
+                // Object format: {'*.zulong.com': 'server:system', ...}
+                Object.entries(this.config.host).forEach(([key, value]) => {
+                    finalConfig.push(`${key} = ${value}`);
+                });
+            }
         }
 
         if (this.config.replica) {
