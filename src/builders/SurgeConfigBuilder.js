@@ -412,6 +412,12 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
             });
         }
 
+        // Output [Host] section if present (from custom base config)
+        if (this.config.host && Array.isArray(this.config.host) && this.config.host.length > 0) {
+            finalConfig.push('\n[Host]');
+            finalConfig.push(...this.config.host);
+        }
+
         if (this.config.replica) {
             finalConfig.push('\n[Replica]');
             Object.entries(this.config.replica).forEach(([key, value]) => {

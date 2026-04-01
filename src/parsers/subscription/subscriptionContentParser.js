@@ -111,6 +111,74 @@ function parseInterval(interval) {
 }
 
 /**
+ * Try to parse content as Surge JSON format (stored config from Base Config Settings)
+ * This handles JSON configs that were converted from Surge INI format
+ * @param {string} content - The content to parse
+ * @returns {object|null} - Parsed result or null if not Surge JSON format
+ */
+export function parseSurgeJson(content) {
+    // Only try JSON parse if content looks like JSON
+    if (!content.trimStart().startsWith('{')) {
+        return null;
+    }
+
+    try {
+        const parsed = JSON.parse(content);
+        if (!parsed || typeof parsed !== 'object') {
+            return null;
+        }
+
+        // Check for Surge-specific fields: general, replica, host, or proxies as array
+        const hasSurgeFields = parsed.general || parsed.replica || parsed.host ||
+            (Array.isArray(parsed.proxies) && parsed.proxies.some(p => typeof p === 'string'));
+
+        if (!hasSurgeFields) {
+            return null;
+        }
+
+        // Parse proxies if present (they are strings in Surge format)
+        let proxies = [];
+        if (Array.isArray(parsed.proxies)) {
+            proxies = parsed.proxies
+                .map(line => {
+                    if (typeof line === 'string') {
+                        return convertSurgeProxyToObject(line);
+                    }
+                    return null;
+                })
+                .filter(p => p != null);
+        }
+
+        // Build config overrides (everything except proxies)
+        const configOverrides = deepCopy(parsed);
+        delete configOverrides.proxies;
+
+        // Convert proxy-groups if present (they are strings in Surge format)
+        if (Array.isArray(parsed['proxy-groups'])) {
+            const proxyGroups = parsed['proxy-groups']
+                .map(line => typeof line === 'string' ? parseSurgeProxyGroupLine(line) : null)
+                .filter(g => g != null);
+            if (proxyGroups.length > 0) {
+                configOverrides['proxy-groups'] = proxyGroups;
+            } else {
+                delete configOverrides['proxy-groups'];
+            }
+        } else {
+            delete configOverrides['proxy-groups'];
+        }
+
+        return {
+            type: 'surgeConfig',
+            proxies,
+            config: Object.keys(configOverrides).length > 0 ? configOverrides : null
+        };
+    } catch (e) {
+        // Not valid JSON
+    }
+    return null;
+}
+
+/**
  * Try to parse content as Clash YAML format
  * @param {string} content - The content to parse
  * @returns {object|null} - Parsed result or null if not Clash format
@@ -264,6 +332,12 @@ export function parseSubscriptionContent(content) {
     const singboxResult = parseSingboxJson(trimmed);
     if (singboxResult) {
         return singboxResult;
+    }
+
+    // Try Surge JSON (stored config from Base Config Settings)
+    const surgeJsonResult = parseSurgeJson(trimmed);
+    if (surgeJsonResult) {
+        return surgeJsonResult;
     }
 
     // Try Clash YAML
