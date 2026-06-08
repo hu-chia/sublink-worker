@@ -18,6 +18,8 @@ ENV PORT=8787
 COPY --from=builder /app/dist ./dist
 COPY public ./public
 
+RUN mkdir -p /data
+
 EXPOSE 8787
 
 CMD ["node", "dist/node-server.cjs"]

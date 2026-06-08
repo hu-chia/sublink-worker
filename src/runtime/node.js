@@ -1,12 +1,17 @@
 import Redis from 'ioredis';
 import { createFileAssetFetcher } from '../adapters/assets/fileAssetFetcher.js';
-import { UpstashKVAdapter } from '../adapters/kv/upstashKv.js';
+import { FileKVAdapter } from '../adapters/kv/fileKv.js';
 import { MemoryKVAdapter } from '../adapters/kv/memoryKv.js';
 import { RedisKVAdapter } from '../adapters/kv/redisKv.js';
+import { UpstashKVAdapter } from '../adapters/kv/upstashKv.js';
 
 export function createNodeRuntime(env = process.env) {
+    const kv = resolveKv(env);
+    if (kv instanceof FileKVAdapter) {
+        kv.cleanupExpired().catch(() => {});
+    }
     return {
-        kv: resolveKv(env),
+        kv,
         assetFetcher: createFileAssetFetcher(env.STATIC_DIR || 'public'),
         logger: console,
         config: {
@@ -26,6 +31,9 @@ function resolveKv(env) {
             url: env.KV_REST_API_URL,
             token: env.KV_REST_API_TOKEN
         });
+    }
+    if (env.FILE_KV_DIR) {
+        return new FileKVAdapter({ dir: env.FILE_KV_DIR });
     }
     if (env.DISABLE_MEMORY_KV === 'true') {
         return null;
