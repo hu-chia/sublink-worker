@@ -87,30 +87,6 @@ function isLikelyBase64(text) {
  * @param {string} text - Raw text content
  * @returns {string} - Decoded content
  */
-<<<<<<< HEAD
-function decodeContent(text) {
-    const urlDecodedText = decodeUriComponentIfNeeded(text);
-    if (isPlainSubscriptionContent(urlDecodedText)) {
-        return urlDecodedText;
-    }
-
-    const base64Candidate = normalizeBase64Candidate(urlDecodedText);
-    if (!base64Candidate) {
-        return urlDecodedText;
-    }
-
-    try {
-        const decodedText = decodeUriComponentIfNeeded(decodeBase64(base64Candidate));
-        if (isPlainSubscriptionContent(decodedText)) {
-            return decodedText;
-        }
-    } catch (e) {
-        return urlDecodedText;
-    }
-
-    return urlDecodedText;
-}
-
 function decodeContent(text) {
     const trimmed = text.trim();
 
