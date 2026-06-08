@@ -510,6 +510,36 @@ export class SurgeConfigBuilder extends BaseConfigBuilder {
 
         finalConfig.push('FINAL,' + this.t('outboundNames.Fall Back'));
 
+        const handledSections = new Set([
+            'general', 'host', 'replica', 'proxies', 'proxy-groups', 'rules'
+        ]);
+
+        const sectionNameMap = {
+            'mitm': 'MITM',
+            'url rewrite': 'URL Rewrite',
+            'header rewrite': 'Header Rewrite',
+            'script': 'Script',
+            'map local': 'Map Local',
+            'tunnel': 'Tunnel',
+        };
+
+        const extraSections = Object.keys(this.config).filter(
+            key => !handledSections.has(key) && this.config[key] != null
+        );
+
+        for (const key of extraSections) {
+            const sectionName = sectionNameMap[key] || key.charAt(0).toUpperCase() + key.slice(1);
+            finalConfig.push(`\n[${sectionName}]`);
+            const value = this.config[key];
+            if (Array.isArray(value)) {
+                finalConfig.push(...value);
+            } else if (typeof value === 'object') {
+                Object.entries(value).forEach(([k, v]) => {
+                    finalConfig.push(`${k} = ${v}`);
+                });
+            }
+        }
+
         return finalConfig.join('\n');
     }
 
