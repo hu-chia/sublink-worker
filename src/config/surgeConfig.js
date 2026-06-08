@@ -11,7 +11,7 @@ export const SURGE_CONFIG = {
 		'http-listen': '127.0.0.1:6152',
 		'socks5-listen': '127.0.0.1:6153',
 		'allow-hotspot-access': false,
-		'skip-proxy': '127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,100.64.0.0/10,17.0.0.0/8,localhost,*.local,*.crashlytics.com,seed-sequoia.siri.apple.com,sequoia.apple.com',
+		'skip-proxy': '127.0.0.1,192.168.0.0/16,10.0.0.0/8,172.16.0.0/12,100.64.0.0/10,17.0.0.0/8,localhost,*.local,*.crashlytics.com,seed-sequoia.siri.apple.com,sequoia.apple.com,zulong.com',
 		'test-timeout': 5,
 		'proxy-test-url': 'http://cp.cloudflare.com/generate_204',
 		'internet-test-url': 'http://www.apple.com/library/test/success.html',
@@ -22,10 +22,13 @@ export const SURGE_CONFIG = {
 		'encrypted-dns-server': 'https://223.5.5.5/dns-query',
 		'exclude-simple-hostnames': true,
 		'read-etc-hosts': true,
-		'always-real-ip': '*.msftconnecttest.com, *.msftncsi.com, *.srv.nintendo.net, *.stun.playstation.net, xbox.*.microsoft.com, *.xboxlive.com, *.logon.battlenet.com.cn, *.logon.battle.net, stun.l.google.com, easy-login.10099.com.cn,*-update.xoyocdn.com, *.prod.cloud.netflix.com, appboot.netflix.com, *-appboot.netflix.com',
+		'always-real-ip': '*.msftconnecttest.com, *.msftncsi.com, *.srv.nintendo.net, *.stun.playstation.net, xbox.*.microsoft.com, *.xboxlive.com, *.logon.battlenet.com.cn, *.logon.battle.net, stun.l.google.com, easy-login.10099.com.cn,*-update.xoyocdn.com, *.prod.cloud.netflix.com, appboot.netflix.com, *-appboot.netflix.com, *.zulong.com',
 		'hijack-dns': '*:53',
 		'udp-policy-not-supported-behaviour': 'REJECT',
 		'hide-vpn-icon': false,
+	},
+	'host': {
+		'*.zulong.com': 'server:system'
 	},
 	'replica': {
 		'hide-apple-request': true,
